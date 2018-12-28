@@ -14,10 +14,12 @@ def inference(net, data_loader,**kwargs):
     total = 1
     correct = 0
     assert kwargs['device'] != None, 'Device error'
-    device = kwargs['device'] 
+    device = kwargs['device']
+    model.to(device)
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(testloader):
             inputs, targets = inputs.to(device), targets.to(device)
+            output = model(inputs)
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
