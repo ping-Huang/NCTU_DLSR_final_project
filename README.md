@@ -85,5 +85,8 @@ e.g..
 * Add nctu-arch as collaborator. (Settings -> collaborator)
 * After deadline you need to create a pull request for open review.
 * Please describe the external plugins you used and its usage precisely.
+# Example usage
+  TESTDATADIR="./path/to/cifar10/data" python3 example
+  default: overide team 12 data
 # Score sheet link
 https://docs.google.com/spreadsheets/d/1-Z8Q7NkgjgPS7OUu3Z0AQiBScHSKcc-IoEZdGazyq1A/edit?usp=sharing
