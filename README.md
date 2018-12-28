@@ -22,9 +22,8 @@ from benchmark import benchmarking
     - 0: classification
     - 1: super resolution
     - 2: objection detection
-  - model: pytorch or onnx
+  - model: pytorch 
     - 目前計算 pytorch model weight 數量及大小
-    - 考慮要能單獨執行 要轉成 onnx format
   - preprocess_fn, *pre_args, **pre_kwargs: 
     - 前處理 function， 可以轉換 data format
     - 參數 可自定義, 無則 None
