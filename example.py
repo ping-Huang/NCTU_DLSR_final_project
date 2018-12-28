@@ -11,7 +11,7 @@ assert data_dir is not None, "No data directory"
 model = resnet18(pretrained=True)
 @benchmarking(team=12, task=0, model=model, preprocess_fn=None)
 def inference(net, data_loader,**kwargs):
-    total = 1
+    total = 0
     correct = 0
     assert kwargs['device'] != None, 'Device error'
     device = kwargs['device']
@@ -19,7 +19,7 @@ def inference(net, data_loader,**kwargs):
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(testloader):
             inputs, targets = inputs.to(device), targets.to(device)
-            outputs = model(inputs)
+            outputs = net(inputs)
             _, predicted = outputs.max(1)
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
