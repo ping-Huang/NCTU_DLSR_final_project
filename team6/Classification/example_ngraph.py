@@ -59,6 +59,8 @@ def do_inference(engine,img):
 
 '''
 model = resnet20_cifar()
+inputs = []
+targets = []
 @benchmarking(team=6, task=0, model=model, preprocess_fn=None)
 def inference(model, data_loader,**kwargs):
     total = 0
@@ -66,15 +68,16 @@ def inference(model, data_loader,**kwargs):
     assert kwargs['device'] != None, 'Device error'
     device = kwargs['device']
     if device == "cpu":
-        for batch_idx, (inputs, targets) in enumerate(testloader):
-            inputs, targets = inputs.to(device).numpy(), targets.to(device).numpy()
-            outputs = resnet(inputs)
+        #for inputs, targets in testloader:
+        for idx in range(len(test_loader)):
+            inputs[idx], targets[idx] = inputs[idx].to(device).numpy(), targets[idx].to(device).numpy()
+            outputs = resnet(inputs[idx])
             pred = np.argmax(outputs,axis=1)
-            total += len(targets)
-            if(targets.shape != pred.shape):
-                correct += np.equal(targets,pred[0:len(targets)]).sum()
+            total += len(targets[idx])
+            if(targets[idx].shape != pred.shape):
+                correct += np.equal(targets[idx],pred[0:len(targets)]).sum()
             else:
-                correct += np.equal(targets,pred).sum()
+                correct += np.equal(targets[idx],pred).sum()
     else:
         model.to(device)
         checkpoint = torch.load('ckpt.t7')
@@ -87,12 +90,13 @@ def inference(model, data_loader,**kwargs):
         model.eval()
 
         with torch.no_grad():
-            for batch_idx, (inputs, targets) in enumerate(testloader):
-                inputs, targets = inputs.to(device), targets.to(device)
-                outputs = model(inputs)
+            #for inputs, targets in testloader:
+            for idx in range(len(test_loader)):
+                inputs[idx], targets[idx] = inputs[idx].to(device), targets[idx].to(device)
+                outputs = model(inputs[idx])
                 _, predicted = outputs.max(1)
-                total += targets.size(0)
-                correct += predicted.eq(targets).sum().item()
+                total += targets[idx].size(0)
+                correct += predicted.eq(targets[idx]).sum().item()
         '''
         for batch_idx, (inputs, targets) in enumerate(testloader):
             inputs, targets = inputs.to(device).numpy(), targets.to(device).numpy()
@@ -122,4 +126,7 @@ if __name__=='__main__':
 
     testset = torchvision.datasets.ImageFolder(root=(cinic_directory + '/test'), transform=transform)
     testloader = torch.utils.data.DataLoader(testset, batch_size=9000, shuffle=False, num_workers=4)
+    for ins, ts in testloader:
+        inputs.append(ins)
+        targets.append(ts)
     inference(model, testloader)
