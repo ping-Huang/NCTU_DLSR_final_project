@@ -10,12 +10,13 @@ import sys
 from models import resnet20_cifar
 from collections import OrderedDict
 import time
+import numpy as np
 
 import onnx
 import ngraph as ng
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
-onnx_protobuf = onnx.load('resnet20_cinic.onnx')
+onnx_protobuf = onnx.load('resnet20_cinic_100.onnx')
 ng_model = import_onnx_model(onnx_protobuf)[0]
 runtime = ng.runtime(backend_name='CPU')
 resnet = runtime.computation(ng_model['output'], *ng_model['inputs'])
@@ -35,8 +36,8 @@ def inference(model, data_loader,**kwargs):
             inputs, targets = inputs.to(device).numpy(), targets.to(device).numpy()
             outputs = resnet(inputs)
             pred = np.argmax(outputs,axis=1)
-            total += targets.size(0)
-            if(labels.shape != pred.shape):
+            total += len(targets)
+            if(targets.shape != pred.shape):
                 correct += np.equal(targets,pred[0:len(targets)]).sum()
             else:
                 correct += np.equal(targets,pred).sum()
