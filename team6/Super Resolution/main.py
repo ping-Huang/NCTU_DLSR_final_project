@@ -74,13 +74,14 @@ else:
                 net = model.Model(args, checkpoint)
                 loss = loss.Loss(args, checkpoint) if not args.test_only else None
                 t = Trainer(args, loader, net, loss, checkpoint)
-                t.test()
+                psnr = t.test()
             elif dev == 'cuda':
                 args.cpu = False
                 net = model.Model(args, checkpoint)
                 loss = loss.Loss(args, checkpoint) if not args.test_only else None
                 t = Trainer(args, loader, net, loss, checkpoint)
-                t.test()
+                psnr = t.test()
+        return psnr
 
         inference()
         '''
