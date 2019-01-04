@@ -16,10 +16,44 @@ import onnx
 import ngraph as ng
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
-onnx_protobuf = onnx.load('resnet20_cinic_100.onnx')
+ONNX_MODEL = "resnet20_cinic_100.onnx"
+im_h = 32
+im_w = 32
+#ngraph
+onnx_protobuf = onnx.load(ONNX_MODEL)
 ng_model = import_onnx_model(onnx_protobuf)[0]
 runtime = ng.runtime(backend_name='CPU')
 resnet = runtime.computation(ng_model['output'], *ng_model['inputs'])
+#tensorrt
+TRT_LOGGER = rt.Logger(rt.Logger.WARNING)
+def build_engine():
+    with rt.Builder(TRT_LOGGER) as builder, builder.create_network() as network, rt.OnnxParser(network, TRT_LOGGER) as parser:
+        
+        builder.max_workspace_size = 2**30
+        builder.max_batch_size = 32
+        #builder.fp16_mode = True
+        #builder.strict_type_constraints = True
+        
+        with open(ONNX_MODEL,'rb') as model:
+            parser.parse(model.read())
+        
+        return builder.build_cuda_engine(network)
+engine = build_engine()
+batch_size = 100
+def do_inference(engine,img):
+    with engine.create_execution_context() as context:
+        
+        img = img.astype(np.float32)
+        output = np.empty((batch_size,10), dtype = np.float32)
+        d_input = cuda.mem_alloc(img.nbytes)
+        d_output = cuda.mem_alloc(output.nbytes)
+        stream = cuda.Stream()
+        
+        cuda.memcpy_htod_async(d_input, img, stream)
+        context.execute_async(batch_size=batch_size, bindings=[int(d_input), int(d_output)], stream_handle=stream.handle)
+        cuda.memcpy_dtoh_async(output, d_output, stream)
+        stream.synchronize()
+    return output
 
 
 
@@ -43,6 +77,7 @@ def inference(model, data_loader,**kwargs):
                 correct += np.equal(targets,pred).sum()
             print(time.time()-t0)
     else:
+        '''
         model.to(device)
         checkpoint = torch.load('ckpt.t7')
         new_state_dict = OrderedDict()
@@ -60,6 +95,16 @@ def inference(model, data_loader,**kwargs):
                 _, predicted = outputs.max(1)
                 total += targets.size(0)
                 correct += predicted.eq(targets).sum().item()
+        '''
+        for batch_idx, (inputs, targets) in enumerate(testloader):
+            inputs, targets = inputs.to(device).numpy(), targets.to(device).numpy()
+            outputs = do_inference(engine,inputs)
+            pred = np.argmax(outputs,axis=1)
+            total += len(targets)
+            if(targets.shape != pred.shape):
+                correct += np.equal(targets,pred[0:len(targets)]).sum()
+            else:
+                correct += np.equal(targets,pred).sum()
     acc = 100.*correct/total
     print(acc)
     return acc
