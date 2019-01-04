@@ -1,0 +1,6 @@
+classes= 8
+train=data/train_clothes.txt
+valid=data/test_clothes.txt
+names=data/cloth.names
+backup=backup/
+gpus  = 0
