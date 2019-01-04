@@ -48,7 +48,7 @@ ngpus         = len(gpus.split(','))
 
 num_workers   = int(data_options['num_workers'])
 # for testing, batch_size is setted to 1 (one)
-batch_size    = 8 # int(net_options['batch'])
+batch_size    = 16 # int(net_options['batch'])
 
 model = Darknet(cfgfile)
 

@@ -56,7 +56,6 @@ print(engine)
 '''
 torch.manual_seed(args.seed)
 checkpoint = utility.checkpoint(args)
-print(checkpoint.ok)
 
 if args.data_test == 'video':
     from videotester import VideoTester
