@@ -18,20 +18,6 @@ def inference(model, data_loader,**kwargs):
     assert kwargs['device'] != None, 'Device error'
     device = kwargs['device']
     model.to(device)
-    '''
-    if device=='cpu':
-        checkpoint = torch.load('./checkpoint/resnet20_82.52/ckpt.t7')
-        
-        new_state_dict = OrderedDict()
-        for k, v in checkpoint['net'].items():
-            name = k[7:] # remove `module.`
-            new_state_dict[name] = v
-        # load params
-        model.load_state_dict(new_state_dict)
-    else:
-        checkpoint = torch.load('./checkpoint/resnet20_82.52/ckpt.t7')
-        model.load_state_dict(checkpoint['net'])
-    '''
     if device == "cpu":
         checkpoint = torch.load('ckpt.t7', map_location=lambda storage, loc: storage)
     else:
