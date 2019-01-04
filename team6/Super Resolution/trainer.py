@@ -179,6 +179,7 @@ class Trainer():
         )
 
         torch.set_grad_enabled(True)
+        return self.ckp.log[-1, idx_data, idx_scale].data.tolist()
 
     def prepare(self, *args):
         device = torch.device('cpu' if self.args.cpu else 'cuda')
