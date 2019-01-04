@@ -81,7 +81,7 @@ else:
                 loss = loss.Loss(args, checkpoint) if not args.test_only else None
                 t = Trainer(args, loader, net, loss, checkpoint)
                 psnr = t.test()
-        return psnr
+            return psnr
 
         inference()
         '''
