@@ -32,7 +32,10 @@ def inference(model, data_loader,**kwargs):
         checkpoint = torch.load('./checkpoint/resnet20_82.52/ckpt.t7')
         model.load_state_dict(checkpoint['net'])
     '''
-    checkpoint = torch.load('./checkpoint/resnet20_82.52/ckpt.t7')
+    if device == "cpu":
+        checkpoint = torch.load('ckpt.t7', map_location=lambda storage, loc: storage)
+    else:
+        checkpoint = torch.load('ckpt.t7')
     new_state_dict = OrderedDict()
     for k, v in checkpoint['net'].items():
         name = k[7:] # remove `module.`
@@ -54,7 +57,9 @@ def inference(model, data_loader,**kwargs):
 
 if __name__=='__main__':
 
-    cinic_directory = './data/cinic-10'
+    cinic_directory = os.environ['TESTDATADIR']
+    assert cinic_directory is not None, "No data directory"
+    #cinic_directory = './data/cinic-10'
     cinic_mean = [0.47889522, 0.47227842, 0.43047404]
     cinic_std = [0.24205776, 0.23828046, 0.25874835]
 

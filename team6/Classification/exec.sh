@@ -1,0 +1,1 @@
+TESTDATADIR="../../../../../tmp/dataset-nctu/CINIC-10" python example.py
