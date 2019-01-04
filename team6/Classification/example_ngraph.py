@@ -16,7 +16,7 @@ import onnx
 import ngraph as ng
 from ngraph_onnx.onnx_importer.importer import import_onnx_model
 
-ONNX_MODEL = "resnet20_cinic_100.onnx"
+ONNX_MODEL = "resnet20_cinic_9000.onnx"
 im_h = 32
 im_w = 32
 #ngraph
@@ -25,6 +25,7 @@ ng_model = import_onnx_model(onnx_protobuf)[0]
 runtime = ng.runtime(backend_name='CPU')
 resnet = runtime.computation(ng_model['output'], *ng_model['inputs'])
 #tensorrt
+'''
 TRT_LOGGER = rt.Logger(rt.Logger.WARNING)
 def build_engine():
     with rt.Builder(TRT_LOGGER) as builder, builder.create_network() as network, rt.OnnxParser(network, TRT_LOGGER) as parser:
@@ -56,7 +57,7 @@ def do_inference(engine,img):
     return output
 
 
-
+'''
 model = resnet20_cifar()
 @benchmarking(team=6, task=0, model=model, preprocess_fn=None)
 def inference(model, data_loader,**kwargs):
@@ -66,7 +67,6 @@ def inference(model, data_loader,**kwargs):
     device = kwargs['device']
     if device == "cpu":
         for batch_idx, (inputs, targets) in enumerate(testloader):
-            t0 = time.time()
             inputs, targets = inputs.to(device).numpy(), targets.to(device).numpy()
             outputs = resnet(inputs)
             pred = np.argmax(outputs,axis=1)
@@ -75,9 +75,7 @@ def inference(model, data_loader,**kwargs):
                 correct += np.equal(targets,pred[0:len(targets)]).sum()
             else:
                 correct += np.equal(targets,pred).sum()
-            print(time.time()-t0)
     else:
-        '''
         model.to(device)
         checkpoint = torch.load('ckpt.t7')
         new_state_dict = OrderedDict()
@@ -105,6 +103,7 @@ def inference(model, data_loader,**kwargs):
                 correct += np.equal(targets,pred[0:len(targets)]).sum()
             else:
                 correct += np.equal(targets,pred).sum()
+        '''
     acc = 100.*correct/total
     print(acc)
     return acc
@@ -122,5 +121,5 @@ if __name__=='__main__':
     transforms.Normalize(mean=cinic_mean, std=cinic_std)])
 
     testset = torchvision.datasets.ImageFolder(root=(cinic_directory + '/test'), transform=transform)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=100, shuffle=False, num_workers=2)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=9000, shuffle=False, num_workers=4)
     inference(model, testloader)
